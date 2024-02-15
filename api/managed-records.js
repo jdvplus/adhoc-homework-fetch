@@ -1,6 +1,6 @@
 import URI from 'urijs';
 
-// /records endpoint
+// records endpoint
 window.path = 'http://localhost:3000/records';
 
 /**
@@ -53,17 +53,47 @@ const retrieve = async (options) => {
       : await fetch(new URI('http://localhost:3000/records?limit=10'));
     const data = await res.json();
 
-    console.log('data CONTEXTRECOVERED', data);
-    console.log('data length', data.length);
+    // console.log('data 495 test', data);
+    // console.log('data length', data.length);
 
-    return data;
+    const payloadObject = {
+      ids: [],
+      open: [],
+      closedPrimaryCount: 0,
+      previousPage: options.page && options.page > 1 ? options.page - 1 : null,
+      nextPage: options.page ? options.page + 1 : null,
+    };
+
+    for (const item of data) {
+      const { ids, open } = payloadObject;
+
+      ids.push(item.id);
+
+      if (item.disposition === 'open') open.push(item);
+
+      if (
+        item.color === 'red' ||
+        item.color === 'blue' ||
+        item.color === 'yellow'
+      )
+        item.isPrimary = true;
+      else item.isPrimary = false;
+
+      if (item.disposition === 'closed' && item.isPrimary)
+        payloadObject.closedPrimaryCount += 1;
+    }
+
+    console.log('payload object current', payloadObject);
+
+    return payloadObject;
   } catch (err) {
     console.log('error:', err);
   }
 };
 
 // example:
-retrieve({ page: 3, colors: ['blue', 'yellow'] });
+// retrieve({ page: 3, colors: ['blue', 'brown'] });
+retrieve();
 
 export default retrieve;
 
