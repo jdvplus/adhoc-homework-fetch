@@ -3,10 +3,6 @@ import URI from 'urijs';
 // /records endpoint
 window.path = 'http://localhost:3000/records';
 
-const uri = new URI(
-  'http://localhost:3000/records?limit=10&offset=0&color[]=red'
-);
-
 /* notes/observations */
 
 // PAGINATION
@@ -47,20 +43,20 @@ const retrieve = async (options) => {
   // input: page (num), colors (array)
   // output: string representing URI to fetch from
   const mapOptionsToURI = (page, colors) => {
-    if (!page && !colors) return baseURIString;
-    if (!page) return baseURIString + getColors(colors);
-    if (!colors) return baseURIString + getPage(page);
+    if (!page && !colors) return new URI(baseURIString);
+    if (!page) return new URI(baseURIString + getColors(colors));
+    if (!colors) return new URI(baseURIString + getPage(page));
 
-    return baseURIString + getPage(page) + getColors(colors);
+    return new URI(baseURIString + getPage(page) + getColors(colors));
   };
 
   try {
     const res = options
       ? await fetch(mapOptionsToURI(options.page, options.colors))
-      : await fetch(baseURIString);
+      : await fetch(new URI(baseURIString));
     const data = await res.json();
 
-    console.log('data BLUEYELLOW', data);
+    console.log('data USING URI', data);
     console.log('data length', data.length);
 
     return data;
