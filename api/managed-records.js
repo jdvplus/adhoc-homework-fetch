@@ -53,15 +53,12 @@ const retrieve = async (options) => {
       : await fetch(new URI('http://localhost:3000/records?limit=10'));
     const data = await res.json();
 
-    // console.log('data 495 test', data);
-    // console.log('data length', data.length);
-
     const payloadObject = {
       ids: [],
       open: [],
       closedPrimaryCount: 0,
       previousPage: options.page && options.page > 1 ? options.page - 1 : null,
-      nextPage: options.page ? options.page + 1 : null,
+      nextPage: options.page && options.page <= 50 ? options.page + 1 : null,
     };
 
     for (const item of data) {
@@ -83,17 +80,15 @@ const retrieve = async (options) => {
         payloadObject.closedPrimaryCount += 1;
     }
 
-    console.log('payload object current', payloadObject);
-
     return payloadObject;
   } catch (err) {
     console.log('error:', err);
   }
 };
 
-// example:
+// tests:
 // retrieve({ page: 3, colors: ['blue', 'brown'] });
-retrieve();
+// retrieve();
 
 export default retrieve;
 
