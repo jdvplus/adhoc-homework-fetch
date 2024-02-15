@@ -21,6 +21,8 @@ const uri = new URI(
 // ... and so on
 
 const retrieve = async (options) => {
+  const baseURIString = 'http://localhost:3000/records?limit=10';
+
   // helper fn: get page
   // input: page number
   // output: string representing add'l query params
@@ -45,20 +47,20 @@ const retrieve = async (options) => {
   // input: page (num), colors (array)
   // output: string representing URI to fetch from
   const mapOptionsToURI = (page, colors) => {
-    const baseURIString = 'http://localhost:3000/records?limit=10';
-
+    if (!page && !colors) return baseURIString;
     if (!page) return baseURIString + getColors(colors);
     if (!colors) return baseURIString + getPage(page);
-    if (!page && !colors) return baseURIString;
 
     return baseURIString + getPage(page) + getColors(colors);
   };
 
   try {
-    const res = await fetch(mapOptionsToURI(options.page, options.colors));
+    const res = options
+      ? await fetch(mapOptionsToURI(options.page, options.colors))
+      : await fetch(baseURIString);
     const data = await res.json();
 
-    console.log('data', data);
+    console.log('data BLUEYELLOW', data);
     console.log('data length', data.length);
 
     return data;
@@ -68,6 +70,6 @@ const retrieve = async (options) => {
 };
 
 // example:
-retrieve({});
+retrieve({ page: 3, colors: ['blue', 'yellow'] });
 
 export default retrieve;
