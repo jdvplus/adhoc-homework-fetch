@@ -46,19 +46,21 @@ const mapOptionsToURI = (page, colors) => {
   return new URI(baseURIString + getPage(page) + getColors(colors));
 };
 
-const retrieve = async (options) => {
+const retrieve = async (options = { page: 1, colors: [] }) => {
   try {
     const res = options
       ? await fetch(mapOptionsToURI(options.page, options.colors))
       : await fetch(new URI('http://localhost:3000/records?limit=10'));
     const data = await res.json();
 
+    console.log('look here! data', data);
+
     const payloadObject = {
       ids: [],
       open: [],
       closedPrimaryCount: 0,
       previousPage: options.page && options.page > 1 ? options.page - 1 : null,
-      nextPage: options.page && options.page <= 50 ? options.page + 1 : null,
+      nextPage: options.page && options.page < 50 ? options.page + 1 : null,
     };
 
     for (const item of data) {
@@ -79,6 +81,8 @@ const retrieve = async (options) => {
       if (item.disposition === 'closed' && item.isPrimary)
         payloadObject.closedPrimaryCount += 1;
     }
+
+    console.log('payload object', payloadObject);
 
     return payloadObject;
   } catch (err) {
