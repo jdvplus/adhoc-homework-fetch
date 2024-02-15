@@ -10,6 +10,7 @@ window.path = 'http://localhost:3000/records';
  * @return {string} - page query parameters
  */
 const getPage = (pageNum) => {
+  // console.log('page number failed test', pageNum);
   return `&offset=${pageNum * 10 - 10}`;
 };
 
@@ -20,10 +21,15 @@ const getPage = (pageNum) => {
  * @return {string} - color query parameters
  */
 const getColors = (colorsArray) => {
+  const colorsSet = new Set();
+  colorsSet.add('red').add('brown').add('blue').add('yellow').add('green');
+
   let colorParams = '';
 
+  if (!colorsArray.length) return colorParams;
+
   for (const color of colorsArray) {
-    colorParams += `&color[]=${color}`;
+    if (colorsSet.has(color)) colorParams += `&color[]=${color}`;
   }
 
   return colorParams;
@@ -36,30 +42,28 @@ const getColors = (colorsArray) => {
  * @param {array} colors - requested colors
  * @return {string} - full URI string to fetch data from within main function
  */
-const mapOptionsToURI = (page, colors) => {
+const mapOptionsToURI = (page = 1, colors = []) => {
   const baseURIString = 'http://localhost:3000/records?limit=10';
-
-  if (!page && !colors) return new URI(baseURIString);
-  if (!page) return new URI(baseURIString + getColors(colors));
-  if (!colors) return new URI(baseURIString + getPage(page));
 
   return new URI(baseURIString + getPage(page) + getColors(colors));
 };
 
 const retrieve = async (options = { page: 1, colors: [] }) => {
   try {
-    const res = options
-      ? await fetch(mapOptionsToURI(options.page, options.colors))
-      : await fetch(new URI('http://localhost:3000/records?limit=10'));
+    const res = await fetch(mapOptionsToURI(options.page, options.colors));
     const data = await res.json();
 
     console.log('look here! data', data);
+
+    if (!options.page) options.page = 1;
 
     const payloadObject = {
       ids: [],
       open: [],
       closedPrimaryCount: 0,
+
       previousPage: options.page && options.page > 1 ? options.page - 1 : null,
+
       nextPage: options.page && options.page < 50 ? options.page + 1 : null,
     };
 
@@ -91,8 +95,11 @@ const retrieve = async (options = { page: 1, colors: [] }) => {
 };
 
 // tests:
-// retrieve({ page: 3, colors: ['blue', 'brown'] });
 // retrieve();
+// retrieve({});
+// retrieve({ page: 2 });
+// retrieve({ colors: ['blue'] });
+// retrieve({ page: 3, colors: ['blue', 'brown'] });
 
 export default retrieve;
 
