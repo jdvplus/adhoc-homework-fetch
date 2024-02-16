@@ -189,7 +189,7 @@ describe('Records', function () {
       .then(done);
   });
 
-  xit('should recover on fetch error', function (done) {
+  it('should recover on fetch error', function (done) {
     window.path = 'http://localhost:3000/recordszzz';
     spyOn(console, 'log').and.callFake(function () {});
 

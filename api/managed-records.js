@@ -10,7 +10,6 @@ window.path = 'http://localhost:3000/records';
  * @return {string} - page query parameters
  */
 const getPage = (pageNum) => {
-  // console.log('page number failed test', pageNum);
   return `&offset=${pageNum * 10 - 10}`;
 };
 
@@ -21,15 +20,12 @@ const getPage = (pageNum) => {
  * @return {string} - color query parameters
  */
 const getColors = (colorsArray) => {
-  const colorsSet = new Set();
-  colorsSet.add('red').add('brown').add('blue').add('yellow').add('green');
-
   let colorParams = '';
 
   if (!colorsArray.length) return colorParams;
 
   for (const color of colorsArray) {
-    if (colorsSet.has(color)) colorParams += `&color[]=${color}`;
+    colorParams += `&color[]=${color}`;
   }
 
   return colorParams;
@@ -48,24 +44,31 @@ const mapOptionsToURI = (page = 1, colors = []) => {
   return new URI(baseURIString + getPage(page) + getColors(colors));
 };
 
+/**
+ * retrieve: main function; fetches data from 'records' API
+ *
+ * @param {object} options - object representing page & color queries
+ * @return {object} - fetched payload transformed into object
+ */
 const retrieve = async (options = { page: 1, colors: [] }) => {
+  let { page, colors } = options;
+  if (!page) page = 1;
+
   try {
-    const res = await fetch(mapOptionsToURI(options.page, options.colors));
+    const res = await fetch(mapOptionsToURI(page, colors));
     const data = await res.json();
 
-    console.log('look here! data', data);
-
-    if (!options.page) options.page = 1;
+    // console.log('data', data);
 
     const payloadObject = {
       ids: [],
       open: [],
       closedPrimaryCount: 0,
-
-      previousPage: options.page && options.page > 1 ? options.page - 1 : null,
-
-      nextPage: options.page && options.page < 50 ? options.page + 1 : null,
+      previousPage: page && page > 1 ? page - 1 : null,
+      nextPage: page && page < 50 ? page + 1 : null,
     };
+
+    if (data.length < 10) payloadObject.nextPage = null;
 
     for (const item of data) {
       const { ids, open } = payloadObject;
@@ -86,7 +89,7 @@ const retrieve = async (options = { page: 1, colors: [] }) => {
         payloadObject.closedPrimaryCount += 1;
     }
 
-    console.log('payload object', payloadObject);
+    // console.log('payload object', payloadObject);
 
     return payloadObject;
   } catch (err) {
@@ -94,24 +97,4 @@ const retrieve = async (options = { page: 1, colors: [] }) => {
   }
 };
 
-// tests:
-// retrieve();
-// retrieve({});
-// retrieve({ page: 2 });
-// retrieve({ colors: ['blue'] });
-// retrieve({ page: 3, colors: ['blue', 'brown'] });
-
 export default retrieve;
-
-/* notes/observations */
-
-// PAGINATION
-// if options.page === 1, URI should be string + '&offset=0'
-// if options.page === 2, URI should be string + '&offset=10'
-// if options.page === 3, URI should be string + '&offset=20'
-// ... and so on
-
-// COLORS
-// if options.colors includes 'red', URI should be string + '&color[]=red'
-// if options.colors includes 'red' & 'brown', URI should be string + '&color[]=red&color[]=brown'
-// ... and so on
