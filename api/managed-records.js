@@ -9,9 +9,7 @@ window.path = 'http://localhost:3000/records';
  * @param {number} pageNum - requested page number
  * @return {string} - page query parameters
  */
-const getPage = (pageNum) => {
-  return `&offset=${pageNum * 10 - 10}`;
-};
+const getPage = (pageNum) => `&offset=${pageNum * 10 - 10}`;
 
 /**
  * getColors: helper function to generate string representing color query params
@@ -58,8 +56,6 @@ const retrieve = async (options = { page: 1, colors: [] }) => {
     const res = await fetch(mapOptionsToURI(page, colors));
     const data = await res.json();
 
-    // console.log('data', data);
-
     const payloadObject = {
       ids: [],
       open: [],
@@ -88,8 +84,6 @@ const retrieve = async (options = { page: 1, colors: [] }) => {
       if (item.disposition === 'closed' && item.isPrimary)
         payloadObject.closedPrimaryCount += 1;
     }
-
-    // console.log('payload object', payloadObject);
 
     return payloadObject;
   } catch (err) {
