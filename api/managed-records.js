@@ -39,7 +39,7 @@ const getColors = (colorsArray) => {
  * @return {string} - full URI string to fetch data from within main function
  */
 const mapOptionsToURI = (page = 1, colors = []) => {
-  const baseURIString = 'http://localhost:3000/records?limit=10';
+  const baseURIString = `${window.path}?limit=10`;
 
   return new URI(baseURIString + getPage(page) + getColors(colors));
 };
